@@ -29,48 +29,45 @@ class CheckmoTest extends TestCase
     private $block;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function setUp(): void
     {
         $context = $this->getMockBuilder(Context::class)
             ->disableOriginalConstructor()
-            ->addMethods([])
+            ->setMethods([])
             ->getMock();
 
         $this->infoMock = $this->getMockBuilder(Info::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getAdditionalInformation'])
+            ->setMethods(['getAdditionalInformation'])
             ->getMock();
 
         $this->block = new Checkmo($context);
     }
 
     /**
+     * @covers \Magento\OfflinePayments\Block\Info\Checkmo::getPayableTo
      * @param array $details
      * @param string|null $expected
-     *
-     * @return void
      * @dataProvider getPayableToDataProvider
-     * @covers \Magento\OfflinePayments\Block\Info\Checkmo::getPayableTo
      */
-    public function testGetPayableTo($details, $expected): void
+    public function testGetPayableTo($details, $expected)
     {
-        $this->infoMock
+        $this->infoMock->expects(static::at(0))
             ->method('getAdditionalInformation')
-            ->withConsecutive(['payable_to'])
-            ->willReturnOnConsecutiveCalls($details);
+            ->with('payable_to')
+            ->willReturn($details);
         $this->block->setData('info', $this->infoMock);
 
         static::assertEquals($expected, $this->block->getPayableTo());
     }
 
     /**
-     * Get list of variations for payable configuration option testing.
-     *
+     * Get list of variations for payable configuration option testing
      * @return array
      */
-    public function getPayableToDataProvider(): array
+    public function getPayableToDataProvider()
     {
         return [
             ['payable_to' => 'payable', 'payable'],
@@ -79,30 +76,27 @@ class CheckmoTest extends TestCase
     }
 
     /**
+     * @covers \Magento\OfflinePayments\Block\Info\Checkmo::getMailingAddress
      * @param array $details
      * @param string|null $expected
-     *
-     * @return void
      * @dataProvider getMailingAddressDataProvider
-     * @covers \Magento\OfflinePayments\Block\Info\Checkmo::getMailingAddress
      */
-    public function testGetMailingAddress($details, $expected): void
+    public function testGetMailingAddress($details, $expected)
     {
-        $this->infoMock
+        $this->infoMock->expects(static::at(1))
             ->method('getAdditionalInformation')
-            ->withConsecutive([], ['mailing_address'])
-            ->willReturnOnConsecutiveCalls(null, $details);
+            ->with('mailing_address')
+            ->willReturn($details);
         $this->block->setData('info', $this->infoMock);
 
         static::assertEquals($expected, $this->block->getMailingAddress());
     }
 
     /**
-     * Get list of variations for mailing address testing.
-     *
+     * Get list of variations for mailing address testing
      * @return array
      */
-    public function getMailingAddressDataProvider(): array
+    public function getMailingAddressDataProvider()
     {
         return [
             ['mailing_address' => 'blah@blah.com', 'blah@blah.com'],
@@ -111,16 +105,15 @@ class CheckmoTest extends TestCase
     }
 
     /**
-     * @return void
      * @covers \Magento\OfflinePayments\Block\Info\Checkmo::getMailingAddress
      */
-    public function testConvertAdditionalDataIsNeverCalled(): void
+    public function testConvertAdditionalDataIsNeverCalled()
     {
         $mailingAddress = 'blah@blah.com';
-        $this->infoMock
+        $this->infoMock->expects(static::at(1))
             ->method('getAdditionalInformation')
-            ->withConsecutive([], ['mailing_address'])
-            ->willReturnOnConsecutiveCalls(null, $mailingAddress);
+            ->with('mailing_address')
+            ->willReturn($mailingAddress);
         $this->block->setData('info', $this->infoMock);
 
         // First we set the property $this->_mailingAddress
